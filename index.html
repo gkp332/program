@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="Hun">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>web</title>
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="index.py">
+    <!-- math.js for parsing / numeric solving -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <ul>
+            <li><a href="#home-section" id="home-link">Üdvözlet</a></li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <section id="home-section">
+            <h1 id="welcome-sign">Welcome to my page!</h1>
+            <div class="ai-box">
+                <!-- Password bot (left) -->
+                <div class="bot-section" id="password-bot">
+                    <div id="ai-response-row" style="display: flex; align-items: center; gap: 16px;">
+                        <div id="ai-response" class="ai-response">AI will respond here...</div>
+                    </div>
+                    <textarea id="user-input" class="ai-textarea" placeholder="Type a number (4–100) and press Enter..."></textarea>
+                    <button id="send-btn">Send</button>
+                </div>
+
+                <!-- Vertical divider -->
+                <div class="vertical-divider"></div>
+
+                <!-- Math bot (right) -->
+                <div class="bot-section" id="math-bot">
+                    <div id="math-response" class="ai-response">Math bot ready — enter expression</div>
+                    <textarea id="math-input" class="ai-textarea" placeholder="Type an expression (e.g. 2+3*4 or 2x+3=7) and press Enter..."></textarea>
+                    <button id="math-send">Calculate</button>
+                    <div id="math-steps" class="math-steps" aria-live="polite"></div>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script src="index.js"></script>
+</body>
+</html>
