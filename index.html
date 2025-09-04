@@ -1,46 +1,251 @@
 <!DOCTYPE html>
 <html lang="Hun">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>web</title>
-    <link rel="stylesheet" href="index.css">
-    <link rel="stylesheet" href="index.py">
-    <!-- math.js for parsing / numeric solving -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>web</title>
+<link rel="stylesheet" href="index.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
+<style>
+    .ai-response {
+        width:100%;
+        min-height:56px;
+        max-height:200px;
+        padding:14px;
+        border-radius:10px;
+        background: linear-gradient(180deg, rgba(255,255,255,0.015), rgba(0,0,0,0.02));
+        border-left:4px solid rgba(0,230,255,0.14);
+        color:var(--text);
+        font-weight:600;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+        overflow-y:auto;
+        word-wrap: break-word;
+        white-space: pre-wrap;
+        font-family: monospace;
+        font-size:16px;
+        line-height:1.4;
+    }
+    #instructions-section p,
+    #instructions-section li {
+        word-wrap: break-word;
+        white-space: pre-wrap;
+        line-height:1.5;
+        margin-bottom:0.8em;
+    }
+    .math-steps.active { display:block; }
+    .math-steps {
+        display:none;
+        max-height:150px;
+        overflow-y:auto;
+        margin-top:10px;
+        padding:6px;
+        border-left:3px solid #00e6ff;
+        background:#f0f0f0;
+        font-family: monospace;
+        font-size:14px;
+    }
+</style>
 </head>
 <body>
-    <div class="sidebar" id="sidebar">
-        <ul>
-            <li><a href="#home-section" id="home-link">Üdvözlet</a></li>
-        </ul>
-    </div>
-    <div class="main-content">
-        <section id="home-section">
-            <h1 id="welcome-sign">Welcome to my page!</h1>
-            <div class="ai-box">
-                <!-- Password bot (left) -->
-                <div class="bot-section" id="password-bot">
-                    <div id="ai-response-row" style="display: flex; align-items: center; gap: 16px;">
-                        <div id="ai-response" class="ai-response">AI will respond here...</div>
-                    </div>
-                    <textarea id="user-input" class="ai-textarea" placeholder="Type a number (4–100) and press Enter..."></textarea>
-                    <button id="send-btn">Send</button>
+<div class="sidebar" id="sidebar">
+    <ul>
+        <li><a href="#home-section" id="home-link">Üdvözlet</a></li>
+        <li><a href="#instructions-section" id="instructions-link">Használati útmutató</a></li>
+    </ul>
+</div>
+<div class="main-content">
+    <section id="home-section">
+        <h1 id="welcome-sign">Welcome to my page!</h1>
+        <div class="ai-box">
+            <div class="bot-section" id="password-bot">
+                <div id="ai-response-row" style="display: flex; align-items: center; gap:16px;">
+                    <div id="ai-response" class="ai-response">AI will respond here...</div>
                 </div>
-
-                <!-- Vertical divider -->
-                <div class="vertical-divider"></div>
-
-                <!-- Math bot (right) -->
-                <div class="bot-section" id="math-bot">
-                    <div id="math-response" class="ai-response">Math bot ready — enter expression</div>
-                    <textarea id="math-input" class="ai-textarea" placeholder="Type an expression (e.g. 2+3*4 or 2x+3=7) and press Enter..."></textarea>
-                    <button id="math-send">Calculate</button>
-                    <div id="math-steps" class="math-steps" aria-live="polite"></div>
-                </div>
+                <textarea id="user-input" class="ai-textarea" placeholder="Type a number (4–100) and press Enter..."></textarea>
+                <button id="send-btn">Send</button>
             </div>
-        </section>
-    </div>
-    <script src="index.js"></script>
+            <div class="vertical-divider"></div>
+            <div class="bot-section" id="math-bot">
+                <div id="math-response" class="ai-response">Math bot ready — enter expression</div>
+                <textarea id="math-input" class="ai-textarea" placeholder="Type an expression (e.g. 2+3*4, 2x+3=7, 500%300) and press Enter..."></textarea>
+                <button id="math-send">Calculate</button>
+                <div id="math-steps" class="math-steps" aria-live="polite"></div>
+            </div>
+        </div>
+    </section>
+    <section id="instructions-section" style="display:none;">
+        <h2>Használati útmutató</h2>
+        <p>💡 Itt találod, hogyan használhatod a botokat:</p>
+        <ul>
+            <li><strong>Password bot:</strong> Írj be egy számot 4–100 között, majd nyomj Entert vagy a Send gombot. A jelszó megjelenik a bot boxban.</li>
+            <li><strong>Math bot:</strong> Írj be egy kifejezést (pl. 2+3, 2*3, 2x+3=7, 500%300), majd nyomj Entert vagy a Calculate gombot. A megoldás és lépések a Math bot boxban jelennek meg.</li>
+        </ul>
+    </section>
+</div>
+<script>
+    const sidebar = document.getElementById('sidebar');
+    document.addEventListener('mousemove', e => {
+        if(!sidebar) return;
+        if(e.clientX<=20) sidebar.classList.add('active');
+        else if(e.clientX>220) sidebar.classList.remove('active');
+    });
+    document.getElementById('home-link')?.addEventListener('click', e => {
+        e.preventDefault();
+        document.getElementById('home-section').style.display='block';
+        document.getElementById('instructions-section').style.display='none';
+    });
+    document.getElementById('instructions-link')?.addEventListener('click', e => {
+        e.preventDefault();
+        document.getElementById('home-section').style.display='none';
+        document.getElementById('instructions-section').style.display='block';
+    });
+
+    // PASSWORD BOT (untouched)
+    function generatePassword(length){
+        const letters="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+        const digits="0123456789";
+        const symbols="#@!$%&*?";
+        const allChars=letters+digits+symbols;
+        let password=digits.charAt(Math.floor(Math.random()*digits.length));
+        for(let i=1;i<length;i++){
+            password+=allChars.charAt(Math.floor(Math.random()*allChars.length));
+        }
+        return password.split('').sort(()=>0.5-Math.random()).join('');
+    }
+    const userInput=document.getElementById('user-input');
+    const aiResponse=document.getElementById('ai-response');
+    userInput.addEventListener('keydown',function(e){
+        if(e.key==='Enter'){e.preventDefault();
+            if(!userInput.dataset.entered){
+                let num=parseInt(userInput.value);
+                if(isNaN(num)||num<4||num>100){aiResponse.textContent="Enter a number between 4–100!";}
+                else{aiResponse.textContent=generatePassword(num);}
+                userInput.dataset.entered="true";
+            }else{
+                aiResponse.textContent="AI will respond here...";
+                userInput.value="";
+                delete userInput.dataset.entered;
+            }
+        }
+    });
+    document.getElementById('send-btn').addEventListener('click',function(){
+        const event=new KeyboardEvent('keydown',{'key':'Enter'});
+        userInput.dispatchEvent(event);
+    });
+
+    // MATH BOT
+    const mathResponse=document.getElementById('math-response');
+    const mathInput=document.getElementById('math-input');
+    const mathSend=document.getElementById('math-send');
+    const mathStepsBox=document.getElementById('math-steps');
+    let lastMathExpr=null;
+    let mathShowing=false;
+
+    function showMathSteps(lines){
+        if(!mathStepsBox) return;
+        mathStepsBox.innerHTML='';
+        lines.forEach(line=>{
+            const div=document.createElement('div');
+            div.textContent=line;
+            mathStepsBox.appendChild(div);
+        });
+        mathStepsBox.classList.add('active');
+    }
+    function clearMathSteps(){
+        if(!mathStepsBox) return;
+        mathStepsBox.innerHTML='';
+        mathStepsBox.classList.remove('active');
+    }
+
+    function isSafeArithmetic(expr){
+        return /^[0-9+\-*/%.()\s^]+$/.test(expr);
+    }
+
+    // SZÁZALÉKOS VÁLTOZÁS FELISMERÉSE
+    function percentChangeSteps(expr){
+        // format lehet 500%300 vagy 500 % 300
+        let parts=expr.split('%').map(p=>p.trim());
+        if(parts.length!==2) return null;
+        let oldVal=parseFloat(parts[0]);
+        let newVal=parseFloat(parts[1]);
+        if(isNaN(oldVal)||isNaN(newVal)||oldVal===0) return null;
+        const steps=[];
+        const change=newVal-oldVal;
+        const percent=(change/oldVal)*100;
+        steps.push(`Original value = ${oldVal}`);
+        steps.push(`New value = ${newVal}`);
+        steps.push(`Change = new - old = ${newVal}-${oldVal} = ${change}`);
+        steps.push(`Percent change = (Change / Original) × 100 = (${change}/${oldVal}) × 100 = ${percent.toFixed(2)}%`);
+        const direction=(change>0)?'increase':(change<0)?'decrease':'no change';
+        return {steps,result:`${Math.abs(percent.toFixed(2))}% ${direction}`};
+    }
+
+    function arithmeticSteps(expression){
+        let expr=expression.replace(/\s+/g,'').replace(/\^/g,'**');
+        if(!isSafeArithmetic(expression)) return { error:'Expression contains invalid characters.' };
+        const steps=[];
+        try{
+            const result=Function('"use strict"; return ('+expr+')')();
+            steps.push(`Evaluate: ${expression} = ${result}`);
+            return {steps,result};
+        }catch(e){
+            return {steps:['Could not evaluate expression.'], result:null};
+        }
+    }
+
+    function solveEquation(expr){
+        // SZÁZALÉKOS FORMÁTUM
+        const percentSolved=percentChangeSteps(expr);
+        if(percentSolved) return percentSolved;
+        // Ha nincs % jel, akkor csak sima arithmetic
+        if(!expr.includes('=') && /^[0-9+\-*/%^().\s]+$/.test(expr)){
+            return arithmeticSteps(expr);
+        }else{
+            return {steps:['Only basic arithmetic or % decrease/increase supported.'], result:null};
+        }
+    }
+
+    function handleMath(){
+        const expr=mathInput.value.trim();
+        if(!expr) return;
+        if(lastMathExpr===expr && mathShowing){
+            mathResponse.textContent='Math bot ready — enter expression';
+            clearMathSteps();
+            mathShowing=false;
+            return;
+        }
+        clearMathSteps();
+        const solved=solveEquation(expr);
+        if(solved && solved.steps && solved.steps.length){
+            mathResponse.textContent=`Result: ${solved.result}`;
+            showMathSteps(solved.steps);
+            lastMathExpr=expr;
+            mathShowing=true;
+        }else{
+            mathResponse.textContent='Could not solve the expression.';
+            lastMathExpr=null;
+            mathShowing=false;
+        }
+    }
+
+    function resetMathDisplay(){
+        mathResponse.textContent='Math bot ready — enter expression';
+        clearMathSteps();
+        mathShowing=false;
+        lastMathExpr=null;
+    }
+
+    mathSend.addEventListener('click', handleMath);
+    mathInput.addEventListener('keydown', function(e){
+        if(e.key==='Enter' && !e.shiftKey){
+            e.preventDefault();
+            if(mathShowing){
+                resetMathDisplay();
+                return;
+            }
+            handleMath();
+        }
+    });
+</script>
 </body>
 </html>
